@@ -28,12 +28,14 @@
 
 unsigned int current_count;
 unsigned int voltage_count;
+unsigned int voltage_value;
 unsigned int knob_count_low_pass_filter;
 unsigned int knob_count;
 int count;
 int flags=0;
 char topstring[LCD_SCREEN_WIDTH+1];
 char scdstring[LCD_SCREEN_WIDTH+1];
+char voltage[5];
 
 
 
@@ -94,7 +96,7 @@ int main(void)
  }
 */
 	  LCD_Intialize();
-	  sprintf(topstring,"TIME        VOLTAGE\0");
+	  sprintf(topstring,"TIME         VOLTAGE\0");
 	  LCD_WriteLine(topstring, LCD_FIRST_LINE);
   for (;;)
   {
@@ -102,7 +104,12 @@ int main(void)
     __bis_SR_register(CPUOFF + GIE);// Turn off CPU pending interrupt=LPM0 this line is only necessary to save power
 	  if(tst_flag(TIMER1_FLAG)){ //4 high is some event ex. 0x4 -> 0x00100
 		  clr_flag(TIMER1_FLAG);
-		  sprintf(scdstring,"Voltage Count = %d\0", voltage_count);
+		  voltage_count = voltage_count>>3;
+		  voltage_value = voltage_count<<4;
+		  voltage_value += voltage_count<<3;
+		  voltage_value += voltage_count<<2;
+		  sprintf(voltage,"%d", voltage_value);
+		  sprintf(scdstring,"                %c.%cV\0", voltage[0],voltage[1]);
 		  LCD_WriteLine(scdstring, LCD_SECOND_LINE);
 	  }
 	  if(tst_flag(A2D_FLAG)){
